@@ -1,47 +1,40 @@
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
+import { ref } from 'vue';
+import axios from 'axios';
+
+const selectedMood = ref('');
+const message = ref('');
+
+const saveMood = async () => {
+  message.value = "Saving..."; // This lets you know the button was clicked!
+  try {
+    await axios.post('https://mood-tracker-api-ky3f.onrender.com/api/moods', {
+      mood: selectedMood.value
+    });
+    message.value = `Successfully saved: ${selectedMood.value}!`;
+  } catch (error) {
+    message.value = "Error: Could not connect to the server.";
+    console.error(error);
+  }
+};
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
+  <div class="container">
+    <h1>Daily Mood Tracker</h1>
+    <div class="buttons">
+      <button @click="selectedMood = 'Happy'">😊 Happy</button>
+      <button @click="selectedMood = 'Sad'">😢 Sad</button>
+      <button @click="selectedMood = 'Neutral'">😐 Neutral</button>
     </div>
-  </header>
 
-  <main>
-    <TheWelcome />
-  </main>
+    <div v-if="selectedMood">
+      <p>Selected: <strong>{{ selectedMood }}</strong></p>
+      <button @click="saveMood" style="padding: 10px; background: green; color: white;">
+        Save to Database
+      </button>
+    </div>
+
+    <h2 v-if="message">{{ message }}</h2>
+  </div>
 </template>
-
-<style scoped>
-header {
-  line-height: 1.5;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-}
-</style>
