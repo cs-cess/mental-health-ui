@@ -6,7 +6,6 @@ const selectedMood = ref('');
 const message = ref('');
 const moodHistory = ref([]); 
 
-// 1. FETCH: Gets data from Railway to show on your screen
 const fetchMoods = async () => {
   try {
     const response = await axios.get('https://mood-tracker-api-ky3f.onrender.com/api/moods');
@@ -16,7 +15,6 @@ const fetchMoods = async () => {
   }
 };
 
-// 2. SAVE: Sends data to Railway
 const saveMood = async () => {
   if (!selectedMood.value) return;
   message.value = "Saving..."; 
@@ -25,7 +23,7 @@ const saveMood = async () => {
       mood_text: selectedMood.value 
     });
     message.value = `Successfully saved: ${selectedMood.value}!`;
-    fetchMoods(); // Refresh the list so the new mood appears instantly
+    fetchMoods(); 
   } catch (error) {
     message.value = "Error: Could not connect to the server.";
   }
@@ -54,7 +52,8 @@ onMounted(fetchMoods);
     <h3>Mood History (from Railway)</h3>
     <ul class="history-list">
       <li v-for="item in moodHistory" :key="item.id">
-        <strong>{{ item.mood_text }}</strong> <small>(ID: {{ item.id }})</small>
+        <strong>{{ item.mood_text || "Old Entry (NULL)" }}</strong> 
+        <small>(ID: {{ item.id }})</small>
       </li>
     </ul>
   </div>
