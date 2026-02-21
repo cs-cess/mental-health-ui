@@ -4,9 +4,9 @@ import axios from 'axios';
 
 const selectedMood = ref('');
 const message = ref('');
-const moodHistory = ref([]); // To store the history from Railway
+const moodHistory = ref([]); 
 
-// Function to fetch all moods from your database
+// 1. FETCH: Gets data from Railway to show on your screen
 const fetchMoods = async () => {
   try {
     const response = await axios.get('https://mood-tracker-api-ky3f.onrender.com/api/moods');
@@ -16,22 +16,21 @@ const fetchMoods = async () => {
   }
 };
 
+// 2. SAVE: Sends data to Railway
 const saveMood = async () => {
   if (!selectedMood.value) return;
   message.value = "Saving..."; 
   try {
-    // Sends data to the mood_text column
     await axios.post('https://mood-tracker-api-ky3f.onrender.com/api/moods', {
       mood_text: selectedMood.value 
     });
     message.value = `Successfully saved: ${selectedMood.value}!`;
-    fetchMoods(); // Refresh the list automatically
+    fetchMoods(); // Refresh the list so the new mood appears instantly
   } catch (error) {
     message.value = "Error: Could not connect to the server.";
   }
 };
 
-// Fetch moods when the page first loads
 onMounted(fetchMoods);
 </script>
 
@@ -52,10 +51,10 @@ onMounted(fetchMoods);
     <h2 v-if="message">{{ message }}</h2>
 
     <hr />
-    <h3>Your History from Railway</h3>
+    <h3>Mood History (from Railway)</h3>
     <ul class="history-list">
       <li v-for="item in moodHistory" :key="item.id">
-        {{ item.mood_text }} <small>(ID: {{ item.id }})</small>
+        <strong>{{ item.mood_text }}</strong> <small>(ID: {{ item.id }})</small>
       </li>
     </ul>
   </div>
@@ -66,6 +65,6 @@ onMounted(fetchMoods);
 .buttons button { font-size: 1.5rem; margin: 10px; cursor: pointer; padding: 10px; border-radius: 8px; }
 .save-btn { padding: 12px 24px; background: #28a745; color: white; cursor: pointer; border: none; border-radius: 5px; font-weight: bold; }
 .history-list { list-style: none; padding: 0; margin-top: 20px; }
-.history-list li { padding: 10px; border-bottom: 1px solid #ddd; width: 60%; margin: 0 auto; color: #555; }
-hr { margin: 40px 0; border: 0; border-top: 1px solid #eee; }
+.history-list li { padding: 10px; border-bottom: 1px solid #ddd; width: 60%; margin: 0 auto; color: #333; }
+hr { margin: 40px 0; border-top: 1px solid #eee; }
 </style>
