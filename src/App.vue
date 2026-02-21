@@ -6,77 +6,87 @@ const selectedMood = ref('');
 const message = ref('');
 const moodHistory = ref([]); 
 
+// 1. FETCH: Pulls the clean data (IDs 6-9) from Railway
 const fetchMoods = async () => {
   try {
     const response = await axios.get('https://mood-tracker-api-ky3f.onrender.com/api/moods');
-    // Sort so newest moods appear at the top
     moodHistory.value = response.data;
   } catch (error) {
     console.error("Error fetching history:", error);
   }
 };
 
+// 2. SAVE: Sends "Happy", "Sad", or "Neutral" to the mood_text column
 const saveMood = async () => {
   if (!selectedMood.value) return;
-  message.value = "Saving..."; 
+  message.value = "Saving to database..."; 
   try {
     await axios.post('https://mood-tracker-api-ky3f.onrender.com/api/moods', {
       mood_text: selectedMood.value 
     });
     message.value = `Successfully saved: ${selectedMood.value}!`;
-    selectedMood.value = ''; // Reset selection
-    fetchMoods(); 
+    selectedMood.value = ''; // Clear the selection after saving
+    fetchMoods(); // Refresh the list so the new mood appears instantly
   } catch (error) {
-    message.value = "Error saving mood.";
+    message.value = "Error: Could not save to database.";
   }
 };
 
+// Load history immediately when the page opens
 onMounted(fetchMoods);
 </script>
 
 <template>
   <div class="container">
-    <h1>Daily Mood Tracker</h1>
-    
-    <div class="buttons">
-      <button @click="selectedMood = 'Happy'">😊 Happy</button>
-      <button @click="selectedMood = 'Sad'">😢 Sad</button>
-      <button @click="selectedMood = 'Neutral'">😐 Neutral</button>
+    <header>
+      <h1>Mental Health Tracker</h1>
+      <p>How are you feeling today?</p>
+    </header>
+
+    <div class="mood-selector">
+      <button @click="selectedMood = 'Happy'" :class="{ active: selectedMood === 'Happy' }">😊 Happy</button>
+      <button @click="selectedMood = 'Sad'" :class="{ active: selectedMood === 'Sad' }">😢 Sad</button>
+      <button @click="selectedMood = 'Neutral'" :class="{ active: selectedMood === 'Neutral' }">😐 Neutral</button>
     </div>
 
-    <div v-if="selectedMood" class="save-area">
-      <p>Current Selection: <strong>{{ selectedMood }}</strong></p>
-      <button @click="saveMood" class="save-btn">Confirm & Save</button>
+    <div v-if="selectedMood" class="confirm-box">
+      <p>You selected: <strong>{{ selectedMood }}</strong></p>
+      <button @click="saveMood" class="save-btn">Save Mood</button>
     </div>
 
-    <p v-if="message" class="status">{{ message }}</p>
+    <p v-if="message" class="status-message">{{ message }}</p>
 
     <hr />
 
-    <div class="history-container">
-      <h3>History Log</h3>
+    <section class="history-section">
+      <h2>History Log (from Railway)</h2>
       <ul class="history-list">
         <li v-for="item in moodHistory" :key="item.id">
-          <span v-if="item.mood_text" class="entry-text">
-            {{ item.mood_text }}
-          </span>
-          <span class="entry-id">ID: {{ item.id }}</span>
+          <div class="history-item" v-if="item.mood_text">
+            <span class="mood-label">{{ item.mood_text }}</span>
+            <span class="id-badge">ID: {{ item.id }}</span>
+          </div>
         </li>
       </ul>
-    </div>
+      <p v-if="moodHistory.length === 0" class="empty-msg">No history found yet.</p>
+    </section>
   </div>
 </template>
 
 <style scoped>
-.container { text-align: center; max-width: 450px; margin: 50px auto; font-family: system-ui, sans-serif; }
-.buttons button { font-size: 1.2rem; margin: 5px; cursor: pointer; padding: 15px; border-radius: 10px; border: 1px solid #ddd; background: #fff; }
-.save-area { margin-top: 20px; padding: 15px; background: #f0fdf4; border-radius: 10px; }
-.save-btn { padding: 10px 20px; background: #22c55e; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
-.status { color: #666; font-style: italic; }
-hr { margin: 30px 0; border: 0; border-top: 1px solid #eee; }
-.history-container { text-align: left; }
+.container { text-align: center; max-width: 500px; margin: 50px auto; font-family: 'Inter', sans-serif; color: #333; }
+h1 { color: #2c3e50; margin-bottom: 5px; }
+.mood-selector { display: flex; justify-content: center; gap: 10px; margin: 20px 0; }
+.mood-selector button { font-size: 1.1rem; padding: 15px; cursor: pointer; border-radius: 12px; border: 1px solid #ddd; background: white; transition: 0.2s; }
+.mood-selector button.active { border-color: #22c55e; background: #f0fdf4; transform: scale(1.05); }
+.confirm-box { background: #f8fafc; padding: 20px; border-radius: 15px; margin-bottom: 20px; }
+.save-btn { padding: 12px 25px; background: #22c55e; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+.status-message { font-style: italic; color: #64748b; }
+hr { margin: 40px 0; border: 0; border-top: 2px solid #f1f5f9; }
+.history-section { text-align: left; }
 .history-list { list-style: none; padding: 0; }
-.history-list li { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #f3f4f6; }
-.entry-text { font-weight: 500; color: #1f2937; }
-.entry-id { color: #9ca3af; font-size: 0.8rem; }
+.history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: #fff; border-bottom: 1px solid #f1f5f9; }
+.mood-label { font-weight: 600; font-size: 1.1rem; }
+.id-badge { background: #e2e8f0; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; color: #475569; }
+.empty-msg { text-align: center; color: #94a3b8; margin-top: 20px; }
 </style>
