@@ -6,10 +6,11 @@ const selectedMood = ref('');
 const message = ref('');
 
 const saveMood = async () => {
-  message.value = "Saving..."; // This lets you know the button was clicked!
+  message.value = "Saving..."; 
   try {
+    // We changed 'mood' to 'mood_text' to match your backend and database
     await axios.post('https://mood-tracker-api-ky3f.onrender.com/api/moods', {
-      mood: selectedMood.value
+      mood_text: selectedMood.value 
     });
     message.value = `Successfully saved: ${selectedMood.value}!`;
   } catch (error) {
@@ -30,7 +31,7 @@ const saveMood = async () => {
 
     <div v-if="selectedMood">
       <p>Selected: <strong>{{ selectedMood }}</strong></p>
-      <button @click="saveMood" style="padding: 10px; background: green; color: white;">
+      <button @click="saveMood" style="padding: 10px; background: green; color: white; cursor: pointer;">
         Save to Database
       </button>
     </div>
@@ -38,3 +39,8 @@ const saveMood = async () => {
     <h2 v-if="message">{{ message }}</h2>
   </div>
 </template>
+
+<style scoped>
+.container { text-align: center; margin-top: 50px; font-family: sans-serif; }
+.buttons button { font-size: 1.5rem; margin: 10px; cursor: pointer; }
+</style>
